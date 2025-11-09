@@ -23,6 +23,19 @@ class StorageService {
     return jsonList.map((json) => Channel.fromJson(json)).toList();
   }
 
+  /// Get existing channel by username or channel ID
+  Future<Channel?> getExistingChannel(String username, String channelId) async {
+    final channels = await loadChannels();
+
+    try {
+      return channels.firstWhere((channel) =>
+          channel.username.toLowerCase() == username.toLowerCase() ||
+          channel.channelId == channelId);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Save channels to JSON file
   Future<void> saveChannels(List<Channel> channels) async {
     final file = File(filePath);
@@ -34,6 +47,14 @@ class StorageService {
   Future<Channel> addChannel(String username, String channelId) async {
     final channels = await loadChannels();
 
+    // Check if channel already exists
+    final Channel? existing = await getExistingChannel(username, channelId);
+
+    ///
+    if (existing != null) {
+      return existing;
+    }
+
     final newChannel = Channel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       username: username,
@@ -41,6 +62,7 @@ class StorageService {
       addedAt: DateTime.now(),
     );
 
+    ///
     channels.add(newChannel);
     await saveChannels(channels);
 

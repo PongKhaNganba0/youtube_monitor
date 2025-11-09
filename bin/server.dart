@@ -14,8 +14,9 @@ void main() async {
     // Dashboard
     ..get('/', (Request request) async {
       final channels = await storageService.loadChannels();
+      final html = await DashboardView.render(channels);
       return Response.ok(
-        DashboardView.render(channels),
+        html,
         headers: {'Content-Type': 'text/html'},
       );
     })
